@@ -5,7 +5,7 @@ const DealCard = () => {
   return (
     <div className='flex gap-4 mx-4 border border-[#cacaca] rounded-lg  shadow-lg'>
       <img src={Image} className='max-w-[105px] object-cover rounded-lg'/>
-      <div className='p-4'>
+      <div className='px-4 py-1'>
         <p className='text-sm'> FLAT</p>
         <p className='text-base font-medium'>50% OFF</p>
         <p className='text-[10px] text-[#222]'>offshore creams</p>
