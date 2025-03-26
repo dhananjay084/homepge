@@ -14,7 +14,6 @@ import ReviewCard from '../components/cards/ReviewCard';
 import FeaturedPost from '../components/cards/FeaturedPost';
 import DealOfWeek from '../components/cards/DealOfWeek';
 import Image from "../assets/banner-image.webp";
-import { Link } from 'react-router';
 
 import FAQ from "../components/Minor/Faq";
 const Home = () => {
@@ -37,7 +36,7 @@ const Home = () => {
 
                 ))}
                 </div>
-            <TextLink text="Popular Categories" colorText="" link="/home" linkText="" />
+            <TextLink text="Popular Categories" colorText="" link="/allcategories" linkText="View All" />
             <div className='px-4 flex flex-wrap gap-4 justify-between'>
                 {
                     category.map((val) => {
@@ -67,7 +66,7 @@ const Home = () => {
         <PopularStors key={index} />
       ))}
     </div>
-            <TextLink text="Coupons" colorText="& Deals" link="/coupons" linkText="View All" />
+            <TextLink text="Coupons" colorText="& Deals" link="/allcoupons" linkText="View All" />
             <div className='space-y-4'>
             {[...Array(4)].map((_, index) => (
                     <Coupons_Deals />

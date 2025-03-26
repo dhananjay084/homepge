@@ -3,6 +3,7 @@ import './App.css'
 import Home from './pages/Home';
 import Footer from './components/Footer';
 import AllCoupons from './pages/AllCoupons';
+import AllCategories from './pages/AllCategories';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 
@@ -28,7 +29,8 @@ function App() {
      <NavBar/>
      <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/coupons" element={<AllCoupons />} />
+        <Route path="/allcoupons" element={<AllCoupons />} />
+        <Route path ="/allcategories" element={<AllCategories/>}/>
       </Routes>
      <Footer/>
      </BrowserRouter>
