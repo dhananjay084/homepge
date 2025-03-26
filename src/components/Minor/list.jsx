@@ -12,5 +12,9 @@ const List = ({ items ,direction}) => {
     </div>
   );    
 };
+List.defaultProps={
+  items:[],
+  direction:''
+}
 
 export default List;

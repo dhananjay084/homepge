@@ -13,7 +13,8 @@ import NewsLetter from '../components/Minor/NewsLetter';
 import ReviewCard from '../components/cards/ReviewCard';
 import FeaturedPost from '../components/cards/FeaturedPost';
 import DealOfWeek from '../components/cards/DealOfWeek';
-
+import Image from "../assets/banner-image.webp";
+import { Link } from 'react-router';
 
 import FAQ from "../components/Minor/Faq";
 const Home = () => {
@@ -22,7 +23,7 @@ const Home = () => {
     return (
         <div>
             <List items={ListItems} direction='px-4 flex  gap-[20px] overflow-x-scroll whitespace-nowrap text-sm font-normal scrollbar-hide' />
-            <Banner />
+            <Banner Text="Every day we  the most interesting things" ColorText="discuss" BgImage={Image}  />
             <TextLink text="Today's Top" colorText="Deals" link="/home" linkText="View All" />
             <div className='flex overflow-x-scroll'>
             {[...Array(4)].map((_, index) => (
@@ -66,7 +67,7 @@ const Home = () => {
         <PopularStors key={index} />
       ))}
     </div>
-            <TextLink text="Coupons" colorText="& Deals" link="/home" linkText="View All" />
+            <TextLink text="Coupons" colorText="& Deals" link="/coupons" linkText="View All" />
             <div className='space-y-4'>
             {[...Array(4)].map((_, index) => (
                     <Coupons_Deals />

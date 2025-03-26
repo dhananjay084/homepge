@@ -5,7 +5,7 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import Person3Icon from "@mui/icons-material/Person3";
 import SearchIcon from "@mui/icons-material/Search";
 import { styled } from "@mui/material/styles";
-
+import { Link } from "react-router";
 // Styled SearchBar with relative positioning
 const SearchBar = styled(Box)(({ theme }) => ({
   backgroundColor: "#fff",
@@ -43,9 +43,16 @@ const NavBar = () => (
         <IconButton edge="start">
           <Menu />
         </IconButton>
-        <Typography variant="subtitle2" fontWeight="bold" color="primary">
-          MY COUPON STOCK
-        </Typography>
+        <Typography
+  variant="subtitle2"
+  fontWeight="bold"
+  color="primary"
+  component={Link}
+  to="/"
+  sx={{ cursor: 'pointer', textDecoration: 'none' }}
+>
+  MY COUPON STOCK
+</Typography>
       </Box>
 
       <Box display="flex" alignItems="center">
