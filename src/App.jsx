@@ -3,7 +3,7 @@ import './App.css'
 import Home from './pages/Home';
 import Footer from './components/Footer';
 import AllCoupons from './pages/AllCoupons';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 
 function App() {
