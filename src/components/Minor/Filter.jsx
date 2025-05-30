@@ -3,7 +3,7 @@ import { IconButton, Menu, MenuItem, Typography } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
-const Filter = () => {
+const Filter = ({text}) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
@@ -23,7 +23,7 @@ const Filter = () => {
       {/* Top Section */}
       <div className="flex justify-between items-center">
         <Typography variant="body1" fontWeight="bold" className="text-lg">
-          See All <Typography color="primary">Categories</Typography>
+          See All <Typography color="primary">{text}</Typography>
         </Typography>
 
         {/* Search & Sort Buttons */}
@@ -67,5 +67,7 @@ const Filter = () => {
     </div>
   );
 };
-
+Filter.defaultProps={
+    text:''
+}
 export default Filter;

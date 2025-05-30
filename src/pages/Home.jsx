@@ -98,7 +98,7 @@ const Home = () => {
             <TextLink text="Featured" colorText="Post" link="" linkText="" />
             <FeaturedPost />
             <TextLink text="Deal of the " colorText="Week" link="" linkText="View All" />
-            <div className='flex overflow-x-scroll'>
+            <div className='flex overflow-x-scroll gap-4 px-4'>
             {[...Array(4)].map((_, index) => (
                               <DealOfWeek />
 

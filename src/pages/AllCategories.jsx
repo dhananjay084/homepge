@@ -24,7 +24,7 @@ const AllCategories = () => {
                     })
                 }
             </div>
-            <Filter/>
+            <Filter text="categories"/>
             <div className='px-4 flex flex-wrap gap-4 justify-between'>
                 {
                     Allcategory.map((val) => {
