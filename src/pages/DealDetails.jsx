@@ -34,7 +34,7 @@ const DealDetails = () => {
   useEffect(() => {
     const fetchDealById = async () => {
       try {
-        const res = await axios.get(`http://mycouponstock-production.up.railway.app/api/deals/${id}`);
+        const res = await axios.get(`https://mycouponstock-production.up.railway.app/api/deals/${id}`);
         setDealDetails(res.data);
       } catch (err) {
         console.error('Error fetching deal:', err);

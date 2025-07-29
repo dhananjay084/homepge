@@ -1,7 +1,7 @@
 // src/api/storeApi.js
 import axios from 'axios';
 
-const BASE_URL = 'http://mycouponstock-production.up.railway.app/api/stores';
+const BASE_URL = 'https://mycouponstock-production.up.railway.app/api/stores';
 
 export const getStoresAPI = async () => {
   const response = await axios.get(BASE_URL);
