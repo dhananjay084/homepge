@@ -1,4 +1,4 @@
-import React ,{useState} from 'react'
+import React ,{useState,useEffect} from 'react'
 import {  Menu, MenuItem, Typography } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import TextLink from '../components/Minor/TextLink';
@@ -6,31 +6,41 @@ import DealCard from '../components/cards/DealCard';
 import PopularBrandCard from '../components/cards/PopularBrandWithText';
 import Coupons_Deals from '../components/cards/Coupons_Deals';
 import DealOfWeek from '../components/cards/DealOfWeek';
-import List from '../components/Minor/list';
-import Filter from '../components/Minor/Filter';
+import { fetchReviews } from '../redux/review/reviewSlice.js';
 import ReviewCard from '../components/cards/ReviewCard';
+import { getDeals } from '../redux/deal/dealSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import {  useSearchParams } from 'react-router-dom';
+
+
 const SingleCategory = () => {
-    const ListItems = ['Beatyry & Spa', 'Things to do', 'Auto & Home', 'Food', 'Fashion', 'Electronics', 'Others']
-
+  const dispatch = useDispatch();
+  const { reviews = [] } = useSelector((state) => state.reviews);
   const [anchorEl, setAnchorEl] = useState(null);
-
+   const [searchParams] = useSearchParams();
+    const category = searchParams.get('name');
+  const { deals = [] } = useSelector((state) => state.deal);
+  const filteredDeals = deals.filter(deal => deal.categorySelect === category);
   const handleSortClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
-
   const handleClose = () => {
     setAnchorEl(null);
   };
-
+  useEffect(() => {
+    dispatch(getDeals());
+        dispatch(fetchReviews()); 
+    
+  }, [dispatch]);
   const open = Boolean(anchorEl); 
   return (
     <div>
        <div className="flex justify-between items-center px-4">
         <div>
           <Typography variant="body1" fontWeight="bold" className="text-lg">
-            Clothing
+            {category}
           </Typography>
-          <Typography>39 Deals 14 Coupons</Typography>
+          <Typography>{filteredDeals.length} Offers</Typography>
         </div>
 
         {/* Search & Sort Buttons */}
@@ -62,47 +72,66 @@ const SingleCategory = () => {
           </Menu>
         </div>
       </div>
-      <TextLink text="Clothing" colorText="deals worth wearing" link="" linkText="" />
+      <TextLink text={category} colorText="deals worth wearing" link="" linkText="" />
             <div className='flex overflow-x-scroll'>
             {[...Array(4)].map((_, index) => (
                     <DealCard />
                 ))}
+                 {filteredDeals
+            .filter(store => store.dealCategory ==='deal')
+          
+          .map(deal => (
+            <DealCard key={deal._id} data={deal} />
+          ))}
                 </div>
 <div className='bg-[#592EA9] text-white my-4'>
-    <p className='px-4 py-2'>Dress up with Cash Back</p>
+    <p className='px-4 py-2'>{category} Coupon </p>
             <div className="flex overflow-x-auto space-x-4 p-4 scrollbar-hide ">
-      {[...Array(4)].map((_, index) => (
-        <PopularBrandCard key={index} />
-      ))}
+            {filteredDeals
+            .filter(store => store.dealCategory ==='coupon')
+            .map(store => (
+              <PopularBrandCard key={store._id} data={store} />
+            ))}
+     
     </div>
     </div>
      <TextLink text="Coupons"colorText="& Deals" link="" linkText="View All"/>
-          <div className='space-y-4'>
-                {[...Array(4)].map((_, index) => (
-                        <Coupons_Deals border={true}/>
-                    ))}
+          <div className='space-y-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:justify-around '>
+                
+                     {filteredDeals
+                              
+                              .map(deal => (
+                                <Coupons_Deals key={deal._id} data={deal} border={true} />
+                              ))}
                     </div>
-                    <div className='mt-4 border-b pb-2'>
-
-                                <List items={ListItems} direction='px-4 flex  gap-[20px] overflow-x-scroll whitespace-nowrap text-sm font-normal scrollbar-hide' />
-                                </div>
+                 
                                 <TextLink text="Deal of the " colorText="Week" link="" linkText="View All" />
             <div className='flex overflow-x-scroll gap-4 px-4'>
             {[...Array(4)].map((_, index) => (
                               <DealOfWeek />
 
                 ))}
+                {filteredDeals
+          .filter(deal => deal.dealType === "Deal of week")
+          .map(deal => (
+            <DealOfWeek key={deal._id} data={deal} />
+          ))}
                 </div>
-                <Filter text="stores"/>
-                      <div className='space-y-4'>
+                      {/* <div className='space-y-4'>
                             {[...Array(4)].map((_, index) => (
                                     <Coupons_Deals border={false}/>
                                 ))}
-                                </div>
+                                </div> */}
                                 <TextLink text="Public" colorText="Reviews" link="" linkText="" />
-                                <div className='px-4'>
-                                <ReviewCard/>
-                                </div>
+                                <div className="p-4 flex gap-4 overflow-x-scroll">
+  {reviews.length > 0 ? (
+    reviews.map((review) => (
+      <ReviewCard key={review._id} data={review} />
+    ))
+  ) : (
+    <p>No reviews found.</p>
+  )}
+</div>
                                 
     </div>
   )

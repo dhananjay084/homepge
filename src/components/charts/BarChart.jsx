@@ -7,15 +7,14 @@ import {
   Tooltip,
   Cell,
 } from "recharts";
-import { FaArrowDown } from "react-icons/fa";
 
 const BarChartCard = ({ data, title, subtitle, total }) => {
   return (
-    <div className="mx-2 my-4 rounded-xl border-[#f1f1f1] shadow-[0px_2px_10px_rgba(202,202,202,1)] p-4">
+    <div className="mx-2 my-4 rounded-xl border-[#f1f1f1] shadow-[0px_2px_10px_rgba(202,202,202,1)] p-4 sm:max-w-[80%] sm:mx-auto">
       {/* Title */}
       <div className="text-center mb-4">
         <h2 className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-1">
-          {total} <FaArrowDown className="text-purple-700 text-sm" />
+          {total} 
         </h2>
         <p className="text-gray-600 text-sm">{subtitle}</p>
       </div>

@@ -1,6 +1,5 @@
 import React from 'react'
 import { Typography } from '@mui/material'
-import { light } from '@mui/material/styles/createPalette'
 
 const TextLink = ({text,colorText,link,linkText}) => {
   return (

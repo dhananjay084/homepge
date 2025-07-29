@@ -1,9 +1,15 @@
 import React from 'react';
 import { Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
-const CouponModal = ({ open, onClose, brand, oldOffer, newOffer, code, description, detailsLink }) => {
+
+const CouponModal = ({ open, onClose,data }) => {
   if (!open) return null;
+    const navigate = useNavigate();
+    const handleCardClick = () => {
+      navigate(`/deal/${data._id}?category=${data.categorySelect}`);
 
+      };
   return (
     // <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-center justify-center">
         <div className="fixed inset-0 z-50 bg-[rgba(0,0,0,0.3)] flex items-center justify-center">
@@ -15,23 +21,22 @@ const CouponModal = ({ open, onClose, brand, oldOffer, newOffer, code, descripti
         </button>
 
         {/* Content */}
-        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{brand}</Typography>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{data.store}</Typography>
         <div className="flex gap-2 text-sm my-2">
-          <s className="text-gray-400">{oldOffer}</s>
-          <span className="font-bold text-[#6c38d9]">{newOffer}</span>
+          <span className="font-bold text-[#6c38d9]">{data.discount}% OFF</span>
         </div>
 
         {/* Code section */}
         <div className="border border-dashed border-[#6c38d9] p-2 rounded-xl mt-2 flex items-center justify-between text-sm">
-          <span><strong>{newOffer}</strong> with Code <strong>{code}</strong></span>
-          <button onClick={() => navigator.clipboard.writeText(code)} className="text-[#6c38d9] underline">
+          <span><strong>{data.discount}% OFF</strong> with Code <strong>{data.couponCode}</strong></span>
+          <button onClick={() => navigator.clipboard.writeText(data.couponCode)} className="text-[#6c38d9] underline">
             Copy
           </button>
         </div>
 
         {/* Details */}
         <Typography className="mt-4 text-sm text-[#6c38d9] underline cursor-pointer">
-          <a href={detailsLink} target="_blank" rel="noopener noreferrer">See Details</a>
+          <p onClick={handleCardClick}>See Details</p>
         </Typography>
       </div>
     </div>

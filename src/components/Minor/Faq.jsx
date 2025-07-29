@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Accordion, AccordionSummary, AccordionDetails, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import Image from '../../assets/faq.png'
 
 const faqs = [
   {
@@ -23,7 +24,9 @@ const faqs = [
   },
 ];
 
-const FAQAccordion = () => {
+const FAQAccordion = ({data}) => {
+  if (!data) return null; 
+
   const [expanded, setExpanded] = useState(false);
 
   const handleChange = (index) => (_, isExpanded) => {
@@ -35,8 +38,10 @@ const FAQAccordion = () => {
       <h2 className="text-center text-2xl font-semibold text-gray-900 mb-6">
         Frequently Ask Questions
       </h2>
+      <div className="sm:grid sm:grid-cols-2 ">
+        <img src={Image} className="hidden sm:block"/>
       <div className="space-y-4">
-        {faqs.map((faq, index) => (
+        {data.map((faq, index) => (
           <Accordion
             key={index}
             expanded={expanded === index}
@@ -79,6 +84,7 @@ const FAQAccordion = () => {
             )}
           </Accordion>
         ))}
+      </div>
       </div>
     </div>
   );

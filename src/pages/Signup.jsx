@@ -6,6 +6,8 @@ import AppleIcon from '@mui/icons-material/Apple';
 const Signup = () => {
   return (
     <AuthLayout>
+
+        <h2 className='text-2xl text-center'>Sign Up</h2>
       <Formik
         initialValues={{ name: '', email: '', password: '', confirmPassword: '' }}
         onSubmit={values => console.log(values)}

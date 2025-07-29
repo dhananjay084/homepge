@@ -1,28 +1,36 @@
-import BannerImage from "../../assets/banner-image.webp"
+import React from 'react';
 
 const Banner = ({ Text, ColorText, BgImage }) => {
   return (
-
     <div
-      className="relative flex items-center justify-center max-w-[95%] mx-auto  bg-contain bg-center p-4 mt-4 rounded-lg min-h-[105px]"
-      style={{ backgroundImage: `url(${BgImage})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover' }}
+      className="relative flex items-center justify-center w-[95%] mx-auto bg-cover bg-center p-4 sm:p-6 md:p-8 mt-4 rounded-lg min-h-[205px]"
+      style={{
+        backgroundImage: `url(${BgImage})`,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+      }}
     >
-      <div className="absolute inset-0 px-4"></div>
-      <div className="relative leading-none text-white ">
-        <p className="mt-2 text-lg md:text-xl max-w-[50%]">{Text}
-         {ColorText && <span className="bg-[#592EA9] p-1 rounded-lg"> {ColorText}</span>}
-        </p>
+      {/* Overlay (optional if needed for darker background): */}
+      {/* <div className="absolute inset-0 bg-black bg-opacity-20 rounded-lg"></div> */}
 
+      <div className="relative text-white w-full">
+        <p className="text-sm sm:text-base md:text-xl lg:text-2xl font-medium max-w-full sm:max-w-[90%] md:max-w-[70%] lg:max-w-[60%] leading-snug">
+          {Text}
+          {ColorText && (
+            <span className="ml-2 bg-[#592EA9] px-2 py-1 rounded-lg text-white inline-block">
+              {ColorText}
+            </span>
+          )}
+        </p>
       </div>
     </div>
   );
 };
+
 Banner.defaultProps = {
-  Text: "",
-  ColorText: "",
-  BgImage: "", 
+  Text: '',
+  ColorText: '',
+  BgImage: '',
 };
 
 export default Banner;
-
-

@@ -1,13 +1,25 @@
 import React from 'react';
-import Category from '../../assets/category.jpeg';
+import { useNavigate } from 'react-router-dom';
 
-const CategoryCard = () => {
+const CategoryCard = ({ data }) => {
+  if (!data) return null;
+  const navigate = useNavigate();
+
+  const { image, name } = data;
+ const handleClick=()=>{
+  navigate(`/category?name=${name}`);
+
+ }
   return (
-    <div className="text-center text-xs space-y-1">
-      <div className="p-1 rounded-2xl bg-white shadow-[0px_2px_10.3px_0px_rgba(0,0,0,0.25)] w-[75px] h-[75px] flex items-center justify-center overflow-hidden">
-        <img src={Category} className="w-full h-full  rounded-2xl" alt="Category" />
+    <div className="text-xs text-center space-y-1 w-full cursor-pointer" onClick={handleClick}>
+      <div className="p-1 rounded-2xl bg-white shadow-[0px_2px_10.3px_0px_rgba(0,0,0,0.25)] w-full aspect-square flex items-center justify-center overflow-hidden">
+        <img
+          src={image || '/default-category.jpg'}
+          className="w-full h-full rounded-2xl object-cover"
+          alt={name || 'Category'}
+        />
       </div>
-      <p>Clothing</p>
+      <p className="px-2 truncate">{name || 'Unnamed'}</p>
     </div>
   );
 };
