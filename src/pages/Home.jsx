@@ -27,15 +27,15 @@ import DesktopStoreCard from "../components/cards/StoreDesktopCard.jsx";
 import { getHomeAdminData } from '../redux/admin/homeAdminSlice';
 
 const Home = () => {
-  const ListItems = [
-    "Beauty & Spa",
-    "Things to do",
-    "Auto & Home",
-    "Food",
-    "Fashion",
-    "Electronics",
-    "Others",
-  ];
+  // const ListItems = [
+  //   "Beauty & Spa",
+  //   "Things to do",
+  //   "Auto & Home",
+  //   "Food",
+  //   "Fashion",
+  //   "Electronics",
+  //   "Others",
+  // ];
 
   const dispatch = useDispatch();
 
@@ -58,10 +58,10 @@ const Home = () => {
   }, [dispatch]);
   return (
     <div>
-      <List
+      {/* <List
         items={ListItems}
         direction="px-4 flex gap-[20px] overflow-x-scroll whitespace-nowrap text-sm font-normal scrollbar-hide"
-      />
+      /> */}
       <div className="lg:hidden">
         <Banner
           Text="Every day we the most interesting things"
@@ -126,7 +126,7 @@ const Home = () => {
             <BrandCard key={store._id} data={store} />
           ))}
       </div>
-      <div className="md:flex overflow-x-scroll hidden px-4">
+      <div className="md:flex overflow-x-scroll hidden px-4 gap-4">
         {stores
           .filter(
             (store) => store.showOnHomepage && store.storeType === "Brands"

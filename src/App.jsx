@@ -9,6 +9,7 @@ import Home from './pages/Home';
 import AllCoupons from './pages/AllCoupons';
 import AllCategories from './pages/AllCategories';
 import AllStores from './pages/AllStores';
+import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 // import StoreBranding from './pages/StoreBranding';
 // import BankOffer from './pages/BankOffers';
 import SingleCategory from './pages/SingleCategory';
@@ -82,12 +83,44 @@ function App() {
             <Route path="/password-sent" element={<PasswordSent />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/edit-profile" element={<EditProfile />} />
-            <Route path='/admin/deals' element={<DealsAdmin/>}/>
+
+
+            <Route path='/admin/deals' element={
+  <ProtectedAdminRoute>
+    <DealsAdmin />
+  </ProtectedAdminRoute>
+}/>
+<Route path='/admin/stores' element={
+  <ProtectedAdminRoute>
+    <StoreAdmin />
+  </ProtectedAdminRoute>
+}/>
+<Route path='/admin/category' element={
+  <ProtectedAdminRoute>
+    <CategoryAdmin />
+  </ProtectedAdminRoute>
+}/>
+<Route path='/admin/review' element={
+  <ProtectedAdminRoute>
+    <ReviewAdmin />
+  </ProtectedAdminRoute>
+}/>
+<Route path='/admin/blogs' element={
+  <ProtectedAdminRoute>
+    <BlogsAdmin />
+  </ProtectedAdminRoute>
+}/>
+<Route path='/admin/home' element={
+  <ProtectedAdminRoute>
+    <HomeAdmin />
+  </ProtectedAdminRoute>
+}/>
+            {/* <Route path='/admin/deals' element={<DealsAdmin/>}/>
             <Route path='/admin/stores' element={<StoreAdmin/>}/>
             <Route path='/admin/category' element={<CategoryAdmin/>}/>
             <Route path='/admin/review' element={<ReviewAdmin/>}/>
             <Route path='/admin/blogs' element={<BlogsAdmin/>}/>
-            <Route path='/admin/home' element={<HomeAdmin/>}/>
+            <Route path='/admin/home' element={<HomeAdmin/>}/> */}
 
 
 

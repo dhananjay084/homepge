@@ -95,7 +95,7 @@ const Deals = () => {
                   <td className="p-3 border">{deal.dealTitle}</td>
                   <td className="p-3 border">{deal.dealDescription}</td>
                   <td className="p-3 border">
-                    <img src={deal.dealImage} alt="deal" className="h-16 w-16 object-cover" />
+                    <img src={deal.dealImage} alt="deal" className="h-16 w-16 object-fill" />
                   </td>
                   <td className="p-3 border">{deal.homePageTitle}</td>
                   <td className="p-3 border">{deal.dealType}</td>

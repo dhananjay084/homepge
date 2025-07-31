@@ -21,3 +21,9 @@ export const deleteCategoryAPI = async (id) => {
   const response = await axios.delete(`${BASE_URL}/${id}`);
   return response.data;
 };
+
+// New API call for searching categories
+export const searchCategoriesAPI = async (searchTerm) => {
+  const response = await axios.get(`${BASE_URL}/search?q=${encodeURIComponent(searchTerm)}`);
+  return response.data;
+};

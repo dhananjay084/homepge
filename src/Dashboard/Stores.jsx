@@ -88,7 +88,7 @@ const Stores = () => {
                   <td className="p-3 border">{store.storeDescription}</td>
 
                   <td className="p-3 border">
-                    <img src={store.storeImage} alt="store" className="h-12 w-12 object-cover" />
+                    <img src={store.storeImage} alt="store" className="h-12 w-12 object-fill" />
                   </td>
                   <td className="p-3 border">{store.homePageTitle}</td>
                   <td className="p-3 border">{store.storeType}</td>

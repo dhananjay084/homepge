@@ -159,9 +159,9 @@ const IndividualStore = () => {
           </div>
         </div>
       
-
+<div className='sm:max-w-[80%] sm:mx-auto'>
       <TextLink text="Shopping" colorText="& Policy" link="" linkText="" />
-     
+      </div>
         <div  className="pt-3 flex justify-between mx-2 gap-4 sm:max-w-[80%] sm:mx-auto">
           <div className='bg-[#F6F6F6] border border-[#E1E1E1] rounded-lg p-4 w-full'>
             <p>Free Shipping</p>

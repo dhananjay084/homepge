@@ -1,4 +1,3 @@
-// src/api/storeApi.js
 import axios from 'axios';
 
 const BASE_URL = 'https://mycouponstock-production.up.railway.app/api/stores';
@@ -27,5 +26,9 @@ export const getStoreByIdAPI = async (id) => {
     return response.data;
   };
   
-
-  
+// New API call for searching stores
+export const searchStoresAPI = async (searchTerm) => {
+  // Make sure to encode the search term for URL safety
+  const response = await axios.get(`${BASE_URL}/search?q=${encodeURIComponent(searchTerm)}`);
+  return response.data;
+};

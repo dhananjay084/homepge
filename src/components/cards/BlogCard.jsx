@@ -10,7 +10,7 @@ const BlogCard = ({ blog }) => {
 
   return (
     <div className="min-w-[300px] bg-white shadow-md rounded-xl overflow-hidden transition-all duration-300">
-      <img src={blog.image} alt={blog.heading} className="w-full h-40 object-cover md:h-60 lg:h-80" />
+      <img src={blog.image} alt={blog.heading} className="w-full h-40 object-fill md:h-60 lg:h-80" />
 
       <div className="p-4">
         <div className="flex justify-between items-center">

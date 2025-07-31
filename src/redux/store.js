@@ -6,6 +6,7 @@ import newsletterReducer from './newsletter/newsletterSlice';
 import reviewReducer from './review/reviewSlice.js';
 import blogReducer from './blog/blogSlice';
 import adminReducer from './admin/homeAdminSlice.js'
+import authReducer from './auth/authSlice.js'
 
 export const store = configureStore({
   reducer: {
@@ -16,5 +17,6 @@ export const store = configureStore({
     reviews: reviewReducer,
     blogs: blogReducer,
     homeAdmin: adminReducer,
+    auth:authReducer
   },
 });

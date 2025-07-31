@@ -13,7 +13,7 @@ const ProductCard = ({data}) => {
       <img
         src={data.dealImage}
         alt={"Product Image"}
-        className="absolute top-0 left-0 w-full h-full object-cover"
+        className="absolute top-0 left-0 w-full h-full object-fill"
       />
 
       {/* Button at bottom-right */}

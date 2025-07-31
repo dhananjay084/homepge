@@ -75,7 +75,7 @@ const Categories = () => {
                 <tr key={cat._id}>
                   <td className="p-3 border">{cat.name}</td>
                   <td className="p-3 border">
-                    <img src={cat.image} alt={cat.name} className="h-12 w-12 object-cover" />
+                    <img src={cat.image} alt={cat.name} className="h-12 w-12 object-fill" />
                   </td>
                   <td className="p-3 border">{cat.popularStore ? 'Yes' : 'No'}</td>
                   <td className="p-3 border">{cat.showOnHomepage ? 'Yes' : 'No'}</td>

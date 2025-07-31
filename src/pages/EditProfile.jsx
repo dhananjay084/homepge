@@ -21,7 +21,7 @@ const EditProfile = () => {
       <img
         src={ProfileImage}
         alt="User"
-        className="w-20 h-20 rounded-full border-4 border-white object-cover"
+        className="w-20 h-20 rounded-full border-4 border-white object-fill"
       />
       {/* Edit Icon at bottom right of image */}
       <div className="absolute -bottom-1 -right-1 bg-white p-1 rounded-full shadow">

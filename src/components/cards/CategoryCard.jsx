@@ -15,7 +15,7 @@ const CategoryCard = ({ data }) => {
       <div className="p-1 rounded-2xl bg-white shadow-[0px_2px_10.3px_0px_rgba(0,0,0,0.25)] w-full aspect-square flex items-center justify-center overflow-hidden">
         <img
           src={image || '/default-category.jpg'}
-          className="w-full h-full rounded-2xl object-cover"
+          className="w-full h-full rounded-2xl object-fill"
           alt={name || 'Category'}
         />
       </div>

@@ -31,7 +31,7 @@ const handleDealClick =()=>{
       >
         {/* Image */}
         <div className={`relative ${border?'max-w-[50%]':'max-w-[35%]'} rounded-lg overflow-hidden`}>
-          <img src={dealImage} className='rounded-lg w-full' />
+          <img src={dealImage} className='rounded-lg w-full max-h-[150px]' />
           {disabled && (
             <div className="absolute inset-0 bg-black opacity-50 rounded-lg"></div>
           )}

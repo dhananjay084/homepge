@@ -4,7 +4,7 @@ import Image from "../assets/banner-image.webp";
 import TextLink from "../components/Minor/TextLink";
 import Coupons_Deals from "../components/cards/Coupons_Deals";
 import ReviewCard from "../components/cards/ReviewCard";
-import FAQ from "../components/Minor/Faq";
+import DesktopCard from '../components/cards/DealsDesktopCard.jsx'
 import { getDeals } from "../redux/deal/dealSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchReviews } from "../redux/review/reviewSlice.js";
@@ -14,15 +14,7 @@ import { getHomeAdminData } from '../redux/admin/homeAdminSlice';
 const AllCoupons = () => {
   const dispatch = useDispatch();
 
-  const ListItems = [
-    "Beauty & Spa",
-    "Things to do",
-    "Auto & Home",
-    "Food",
-    "Fashion",
-    "Electronics",
-    "Others",
-  ];
+  
 
   const { deals = [] } = useSelector((state) => state.deal);
   const { reviews = [] } = useSelector((state) => state.reviews);
@@ -65,8 +57,11 @@ const homeAdmin = useSelector((state) => state.homeAdmin) || {};
       <div className="space-y-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:justify-around">
         {activeDeals.map((deal) => (
           <Coupons_Deals key={deal._id} data={deal} border={true} />
+          
         ))}
       </div>
+      
+      
 
       <TextLink text="Expired" colorText="Coupons" link="" linkText="" />
       <div className="space-y-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:justify-around">

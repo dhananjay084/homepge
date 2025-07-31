@@ -62,7 +62,7 @@ const StoreBranding = () => {
             <div className='flex gap-4 items-center mx-4'>
                 <img
                     src={BannerImage}
-                    className='rounded-sm max-w-[30%] min-h-[100px] object-cover'
+                    className='rounded-sm max-w-[30%] min-h-[100px] object-fill'
                     alt="Walmart Promo Codes"
                 />
                 <p className='font-semibold text-xl'>Walmart Promo Codes & Coupons March 2025</p>

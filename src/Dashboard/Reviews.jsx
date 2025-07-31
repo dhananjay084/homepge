@@ -91,7 +91,7 @@ const Reviews = () => {
                 <p><strong>Name:</strong> {review.name}</p>
                 <p><strong>Designation:</strong> {review.designation}</p>
                 <p><strong>Desc:</strong> {review.desc}</p>
-                <img src={review.image} alt={review.name} className="w-20 h-20 object-cover mt-2 rounded" />
+                <img src={review.image} alt={review.name} className="w-20 h-20 object-fill mt-2 rounded" />
               </div>
               <div className="flex gap-2">
                 <button

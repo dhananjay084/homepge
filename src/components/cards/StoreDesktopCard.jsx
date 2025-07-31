@@ -15,7 +15,7 @@ const BannerCard = ({data}) => {
       <img
         src={data.storeImage}
         alt="Promotion"
-        className="w-full h-[250px] object-cover rounded-2xl"
+        className="w-full h-[250px] object-fill rounded-2xl"
       />
 
       {/* Content */}
