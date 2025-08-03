@@ -1,5 +1,5 @@
 // contactApi.js
-const BASE_URL =  "mycouponstock-production.up.railway.app"; // e.g., "mycouponstock-production.up.railway.app"
+const BASE_URL =  "https://mycouponstock-production.up.railway.app"; // e.g., "https://mycouponstock-production.up.railway.app"
 
 export async function createContactAPI(payload) {
     const res = await fetch(`${BASE_URL}/api/contacts`, {
