@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import List from "../components/Minor/list";
+// import List from "../components/Minor/list";
 import TextLink from "../components/Minor/TextLink";
 import Banner from "../components/Minor/Banner";
 import DealCard from "../components/cards/DealCard";
@@ -22,7 +22,6 @@ import { getStores } from "../redux/store/storeSlice";
 import { getCategories } from "../redux/category/categorySlice";
 import { fetchReviews } from "../redux/review/reviewSlice.js";
 import { fetchBlogs } from "../redux/blog/blogSlice";
-import Image from "../assets/banner-image.webp";
 import DesktopStoreCard from "../components/cards/StoreDesktopCard.jsx";
 import { getHomeAdminData } from '../redux/admin/homeAdminSlice';
 

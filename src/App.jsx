@@ -1,48 +1,61 @@
-import './App.css';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import "./App.css";
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { useDispatch } from 'react-redux';
 
-import NavBar from './components/NavBar';
-import Footer from './components/Footer';
+import NavBar from "./components/NavBar";
+import Footer from "./components/Footer";
 
-import Home from './pages/Home';
-import AllCoupons from './pages/AllCoupons';
-import AllCategories from './pages/AllCategories';
-import AllStores from './pages/AllStores';
-import ProtectedAdminRoute from './components/ProtectedAdminRoute';
+import Home from "./pages/Home";
+import AllCoupons from "./pages/AllCoupons";
+import AllCategories from "./pages/AllCategories";
+import AllStores from "./pages/AllStores";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 // import StoreBranding from './pages/StoreBranding';
 // import BankOffer from './pages/BankOffers';
-import SingleCategory from './pages/SingleCategory';
-import IndividualStore from './pages/IndividualStore';
-import DealDetails from './pages/DealDetails';
+import SingleCategory from "./pages/SingleCategory";
+import IndividualStore from "./pages/IndividualStore";
+import DealDetails from "./pages/DealDetails";
 
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import ForgotPassword from './pages/ForgetPassword';
-import PasswordSent from './pages/PasswordSent';
-import Profile from './pages/Profile';
-import EditProfile from './pages/EditProfile';
-import Blogs from './pages/Blogs'
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgetPassword";
+import PasswordSent from "./pages/PasswordSent";
+import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
+import Blogs from "./pages/Blogs";
+import AboutUs from "./pages/AboutUs";
+import ContactUs from "./pages/ContactUs";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 
-import DealsAdmin from './Dashboard/Deals';
-import StoreAdmin from './Dashboard/Stores';
-import CategoryAdmin from './Dashboard/Categories';
-import ReviewAdmin from './Dashboard/Reviews';
-import BlogsAdmin from './Dashboard/Blogs';
-import HomeAdmin from './Dashboard/Home';
+import DealsAdmin from "./Dashboard/Deals";
+import StoreAdmin from "./Dashboard/Stores";
+import CategoryAdmin from "./Dashboard/Categories";
+import ReviewAdmin from "./Dashboard/Reviews";
+import BlogsAdmin from "./Dashboard/Blogs";
+import HomeAdmin from "./Dashboard/Home";
+import ContactAdmin from './Dashboard/Contact'
 
-
-
+import { checkCurrentUser } from './redux/auth/authApi';
 function LayoutWrapper({ children }) {
   const location = useLocation();
-  const authRoutes = ['/login', '/signup', '/forgot-password', '/password-sent','/profile','/edit-profile'];
+  const authRoutes = [
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/password-sent",
+    "/profile",
+    "/edit-profile",
+  ];
   const isAuthRoute = authRoutes.includes(location.pathname);
 
   return (
     <>
-      {isAuthRoute ? '': <NavBar />}
+      {isAuthRoute ? "" : <NavBar />}
       {children}
-      {isAuthRoute ? '': <Footer />}
+      {isAuthRoute ? "" : <Footer />}
     </>
   );
 }
@@ -61,7 +74,11 @@ function App() {
       },
     },
   });
+  const dispatch = useDispatch();
 
+  useEffect(() => {
+    dispatch(checkCurrentUser());
+  }, [dispatch]);
   return (
     <ThemeProvider theme={theme}>
       <BrowserRouter>
@@ -75,56 +92,82 @@ function App() {
             {/* <Route path="/bankoffer" element={<BankOffer />} /> */}
             <Route path="/category" element={<SingleCategory />} />
             <Route path="/store/:id" element={<IndividualStore />} />
-            <Route path="/deal/:id" element={<DealDetails/>}/>
+            <Route path="/deal/:id" element={<DealDetails />} />
             <Route path="/blogs" element={<Blogs />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/password-sent" element={<PasswordSent />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profilepage" element={<Profile />} />
             <Route path="/edit-profile" element={<EditProfile />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
 
 
-            <Route path='/admin/deals' element={
-  <ProtectedAdminRoute>
-    <DealsAdmin />
-  </ProtectedAdminRoute>
-}/>
-<Route path='/admin/stores' element={
-  <ProtectedAdminRoute>
-    <StoreAdmin />
-  </ProtectedAdminRoute>
-}/>
-<Route path='/admin/category' element={
-  <ProtectedAdminRoute>
-    <CategoryAdmin />
-  </ProtectedAdminRoute>
-}/>
-<Route path='/admin/review' element={
-  <ProtectedAdminRoute>
-    <ReviewAdmin />
-  </ProtectedAdminRoute>
-}/>
-<Route path='/admin/blogs' element={
-  <ProtectedAdminRoute>
-    <BlogsAdmin />
-  </ProtectedAdminRoute>
-}/>
-<Route path='/admin/home' element={
-  <ProtectedAdminRoute>
-    <HomeAdmin />
-  </ProtectedAdminRoute>
-}/>
+            <Route
+              path="/admin/deals"
+              element={
+                <ProtectedAdminRoute>
+                  <DealsAdmin />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/stores"
+              element={
+                <ProtectedAdminRoute>
+                  <StoreAdmin />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/category"
+              element={
+                <ProtectedAdminRoute>
+                  <CategoryAdmin />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/review"
+              element={
+                <ProtectedAdminRoute>
+                  <ReviewAdmin />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/blogs"
+              element={
+                <ProtectedAdminRoute>
+                  <BlogsAdmin />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/home"
+              element={
+                <ProtectedAdminRoute>
+                  <HomeAdmin />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/contact"
+              element={
+                <ProtectedAdminRoute>
+                  <ContactAdmin />
+                </ProtectedAdminRoute>
+              }
+            />
             {/* <Route path='/admin/deals' element={<DealsAdmin/>}/>
             <Route path='/admin/stores' element={<StoreAdmin/>}/>
             <Route path='/admin/category' element={<CategoryAdmin/>}/>
             <Route path='/admin/review' element={<ReviewAdmin/>}/>
             <Route path='/admin/blogs' element={<BlogsAdmin/>}/>
             <Route path='/admin/home' element={<HomeAdmin/>}/> */}
-
-
-
-
           </Routes>
         </LayoutWrapper>
       </BrowserRouter>

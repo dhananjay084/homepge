@@ -1,13 +1,38 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
-import { createBlog, fetchBlogs, updateBlog, deleteBlog } from '../redux/blog/blogSlice';
+import { createBlog, fetchBlogs, updateBlog, deleteBlog } from '../redux/blog/blogSlice'; // Removed searchBlogs thunk
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+import { AgGridReact } from 'ag-grid-react'; // Import AG Grid React component
+import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS
+import 'ag-grid-community/styles/ag-theme-alpine.css'; // Theme CSS
+
+// Import and register AG Grid modules
+import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+ModuleRegistry.registerModules([AllCommunityModule]);
+
+
+// Removed categorySchema as it's not relevant to this file
 
 const AddBlog = () => {
   const dispatch = useDispatch();
-  const { blogs } = useSelector((state) => state.blogs);
+  // Use `blogs` for all data, searchResults is no longer needed here
+  const { blogs, loading } = useSelector((state) => state.blogs); // Removed searchResults
   const [editBlogId, setEditBlogId] = useState(null);
+
+  // AG Grid specific state and ref - searchText and debouncedSearchTerm are removed
+  const gridRef = useRef();
+
+
+  // Removed debounce effect for search term
+  // Removed effect to dispatch search API call or get all blogs based on debounced term
+  useEffect(() => {
+    dispatch(fetchBlogs()); // Always fetch all blogs
+  }, [dispatch]);
+
 
   const formik = useFormik({
     initialValues: {
@@ -24,7 +49,7 @@ const AddBlog = () => {
       blogDetails: Yup.string().required('Required'),
       tags: Yup.string().required('Required'),
     }),
-    onSubmit: (values, { resetForm }) => {
+    onSubmit: async (values, { resetForm }) => {
         const payload = {
           image: values.imageLink,
           heading: values.heading,
@@ -33,43 +58,115 @@ const AddBlog = () => {
           showOnHomepage: values.showOnHomepage,
           featuredPost: values.featuredPost,
         };
-      
-        if (editBlogId) {
-          dispatch(updateBlog({ ...payload, _id: editBlogId }));
-          setEditBlogId(null);
-        } else {
-          dispatch(createBlog(payload));
-        }
-      
-        resetForm();
-      },
-      
-  });
 
-  useEffect(() => {
-    dispatch(fetchBlogs());
-  }, [dispatch]);
+        try {
+          if (editBlogId) {
+            await dispatch(updateBlog({ id: editBlogId, data: payload })).unwrap();
+            toast.success('Blog updated!');
+          } else {
+            await dispatch(createBlog(payload)).unwrap();
+            toast.success('Blog added!');
+          }
+          // After CRUD operation, always re-fetch all blogs
+          dispatch(fetchBlogs());
+          resetForm();
+          setEditBlogId(null); // Clear edit state
+        } catch (error) {
+          toast.error(`Operation failed: ${error.message || 'Unknown error'}`);
+        }
+      },
+  });
 
   const handleEdit = (blog) => {
     formik.setValues({
-      imageLink: blog.image,         // map to form field
-      heading: blog.heading,
-      blogDetails: blog.details,     // map to form field
-      tags: blog.tags.join(', '),
-      showOnHomepage: blog.showOnHomepage,
-      featuredPost: blog.featuredPost,
+      imageLink: blog.image || '',
+      heading: blog.heading || '',
+      blogDetails: blog.details || '',
+      tags: (blog.tags && blog.tags.join(', ')) || '',
+      showOnHomepage: blog.showOnHomepage ?? false,
+      featuredPost: blog.featuredPost ?? false,
     });
     setEditBlogId(blog._id);
   };
-  
 
-  const handleDelete = (id) => {
-    dispatch(deleteBlog(id));
+
+  const handleDelete = async (id) => {
+    try {
+      await dispatch(deleteBlog(id)).unwrap();
+      toast.success('Blog deleted!');
+      // After delete, always re-fetch all blogs
+      dispatch(fetchBlogs());
+    } catch (error) {
+      toast.error(`Failed to delete blog: ${error.message || 'Unknown error'}`);
+    }
   };
 
+  // AG Grid Column Definitions
+  const [columnDefs] = useState([
+    { headerName: 'Image', field: 'image',
+      cellRenderer: (params) => (
+        <img src={params.value} alt="blog" className="h-12 w-12 object-fill rounded-md" />
+      ),
+      width: 100, resizable: false
+    },
+    { headerName: 'Heading', field: 'heading', sortable: true, filter: true, flex: 1 },
+    { headerName: 'Tags', field: 'tags', sortable: true, filter: true,
+      cellRenderer: (params) => params.value ? params.value.join(', ') : '', // Display tags as comma-separated string
+      flex: 1
+    },
+    { headerName: 'Homepage', field: 'showOnHomepage', sortable: true, filter: true,
+      cellRenderer: (params) => (params.value ? '✅' : '❌'),
+      width: 120
+    },
+    { headerName: 'Featured', field: 'featuredPost', sortable: true, filter: true,
+      cellRenderer: (params) => (params.value ? '✅' : '❌'),
+      width: 120
+    },
+    {
+      headerName: 'Actions',
+      field: '_id',
+      cellRenderer: (params) => (
+        <div className="flex space-x-2 items-center h-full">
+          <button
+            onClick={() => handleDelete(params.value)}
+            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs"
+          >
+            Delete
+          </button>
+          <button
+            onClick={() => handleEdit(params.data)}
+            className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-xs"
+          >
+            Edit
+          </button>
+        </div>
+      ),
+      width: 150,
+      resizable: false,
+    },
+  ]);
+
+  // AG Grid default col defs for common settings
+  const defaultColDef = useCallback(() => ({
+    flex: 1,
+    minWidth: 100,
+    resizable: true,
+  }), []);
+
+  // AG Grid ready callback to access the grid API
+  const onGridReady = useCallback((params) => {
+    params.api.sizeColumnsToFit();
+  }, []);
+
+  // AG Grid will now always display all blogs
+  const dataToDisplay = blogs;
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <form onSubmit={formik.handleSubmit} className="space-y-4 bg-white shadow-md p-6 rounded">
+    <div className="p-6 max-w-7xl mx-auto flex flex-col min-h-screen">
+      <ToastContainer />
+      <h1 className="text-2xl font-bold mb-6">Manage Blogs</h1>
+
+      <form onSubmit={formik.handleSubmit} className="space-y-4 bg-white shadow-md p-6 rounded mb-10">
         <h2 className="text-xl font-bold">{editBlogId ? 'Edit Blog' : 'Add Blog'}</h2>
 
         <div>
@@ -157,54 +254,38 @@ const AddBlog = () => {
         </button>
       </form>
 
-      {/* Blog Table */}
-      <div className="mt-10">
-        <h2 className="text-lg font-semibold mb-4">All Blogs</h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-300 text-left">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="p-2 border">Heading</th>
-                <th className="p-2 border">Tags</th>
-                <th className="p-2 border">Homepage</th>
-                <th className="p-2 border">Featured</th>
-                <th className="p-2 border">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {blogs.map((blog) => (
-                <tr key={blog._id} className="hover:bg-gray-50">
-                  <td className="p-2 border">{blog.heading}</td>
-                  <td className="p-2 border">{blog.tags.join(', ')}</td>
-                  <td className="p-2 border">{blog.showOnHomepage ? 'Yes' : 'No'}</td>
-                  <td className="p-2 border">{blog.featuredPost ? 'Yes' : 'No'}</td>
-                  <td className="p-2 border space-x-2">
-                    <button
-                      onClick={() => handleEdit(blog)}
-                      className="px-2 py-1 bg-yellow-500 text-white rounded"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(blog._id)}
-                      className="px-2 py-1 bg-red-500 text-white rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {blogs.length === 0 && (
-                <tr>
-                  <td colSpan="5" className="text-center p-4 text-gray-500">
-                    No blogs available.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {/* Removed Search Input for AG Grid */}
+      {/* <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search blogs..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div> */}
+
+      {/* AG Grid Table */}
+      {loading ? (
+        <div className="text-center py-8">Loading Blogs...</div>
+      ) : dataToDisplay?.length > 0 ? (
+        <div className="ag-theme-alpine flex-grow" style={{ width: '100%' }}>
+          <AgGridReact
+            ref={gridRef}
+            rowData={dataToDisplay}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            onGridReady={onGridReady}
+            pagination={true}
+            paginationPageSize={10}
+            domLayout='autoHeight'
+          />
         </div>
-      </div>
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          No blogs available. {/* Simplified message */}
+        </div>
+      )}
     </div>
   );
 };

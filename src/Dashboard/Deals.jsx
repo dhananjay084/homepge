@@ -1,13 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Formik, Form, Field, FieldArray, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
 import { addDeal, getDeals, deleteDeal, updateDeal } from '../redux/deal/dealSlice';
 import { toast, ToastContainer } from 'react-toastify';
-import { getCategories } from '../redux/category/categorySlice'; 
+import { getCategories } from '../redux/category/categorySlice';
 import { getStores } from '../redux/store/storeSlice';
 
 import 'react-toastify/dist/ReactToastify.css';
+import { AgGridReact } from 'ag-grid-react';
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+// Import and register AG Grid modules
+import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+ModuleRegistry.registerModules([AllCommunityModule]);
+
 
 const DealSchema = Yup.object().shape({
   deals: Yup.array().of(
@@ -31,28 +39,167 @@ const Deals = () => {
   const dispatch = useDispatch();
   const { deals, loading } = useSelector((state) => state.deal);
   const [editDeal, setEditDeal] = useState(null);
-  const { categories } = useSelector((state) => state.category); 
+  const { categories } = useSelector((state) => state.category);
   const { stores } = useSelector((state) => state.store);
+
+  // AG Grid specific state and ref
+  const gridRef = useRef();
+  const [searchText, setSearchText] = useState('');
+
   useEffect(() => {
     dispatch(getDeals());
-    dispatch(getCategories()); 
-    dispatch(getStores()); 
-
-
+    dispatch(getCategories());
+    dispatch(getStores());
   }, [dispatch]);
+
+  // AG Grid Column Definitions
+  const [columnDefs] = useState([
+    { headerName: 'Title', field: 'dealTitle', sortable: true, filter: true, flex: 1 },
+    { headerName: 'Description', field: 'dealDescription', sortable: true, filter: true, flex: 1 },
+    {
+      headerName: 'Image',
+      field: 'dealImage',
+      cellRenderer: (params) => (
+        <img src={params.value} alt="deal" className="h-12 w-12 object-fill rounded-md" />
+      ),
+      width: 100,
+      resizable: false,
+    },
+    { headerName: 'Homepage Title', field: 'homePageTitle', sortable: true, filter: true, flex: 1 },
+    { headerName: 'Type', field: 'dealType', sortable: true, filter: true, width: 120 },
+    { headerName: 'Category', field: 'dealCategory', sortable: true, filter: true, width: 120 },
+    {
+      headerName: 'Homepage?',
+      field: 'showOnHomepage',
+      cellRenderer: (params) => (params.value ? '✅' : '❌'),
+      width: 120,
+      filter: true,
+    },
+    { headerName: 'Store', field: 'store', sortable: true, filter: true, flex: 1 },
+    {
+      headerName: 'Actions',
+      field: '_id',
+      cellRenderer: (params) => (
+        <div className="flex space-x-2 items-center h-full">
+          <button
+            onClick={() => handleDelete(params.value)}
+            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs"
+          >
+            Delete
+          </button>
+          <button
+            onClick={() => handleEdit(params.data)}
+            className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-xs"
+          >
+            Edit
+          </button>
+        </div>
+      ),
+      width: 150,
+      resizable: false,
+    },
+  ]);
+
+  // AG Grid default col defs for common settings
+  const defaultColDef = useCallback(() => ({
+    flex: 1,
+    minWidth: 100,
+    resizable: true,
+  }), []);
+
+  // AG Grid ready callback to access the grid API
+  const onGridReady = useCallback((params) => {
+    params.api.sizeColumnsToFit();
+  }, []);
+
+  // Handle search input change
+  const onFilterTextBoxChanged = useCallback(() => {
+    gridRef.current.api.setQuickFilter(searchText);
+  }, [searchText]);
 
   const handleDelete = async (id) => {
     try {
       await dispatch(deleteDeal(id)).unwrap();
       toast.success('Deal deleted!');
       dispatch(getDeals());
-    } catch {
-      toast.error('Failed to delete deal');
+    } catch (error) {
+      toast.error(`Failed to delete deal: ${error.message || 'Unknown error'}`);
     }
   };
 
+  const formik = Formik({
+    enableReinitialize: true,
+    initialValues: {
+      deals: [
+        editDeal ? {
+          dealTitle: editDeal.dealTitle || '',
+          dealDescription: editDeal.dealDescription || '',
+          dealImage: editDeal.dealImage || '',
+          homePageTitle: editDeal.homePageTitle || '',
+          dealType: editDeal.dealType || '',
+          dealCategory: editDeal.dealCategory || 'coupon',
+          showOnHomepage: editDeal.showOnHomepage ?? false,
+          details: editDeal.details || '',
+          categorySelect: editDeal.categorySelect || '',
+          store: editDeal.store || '',
+          couponCode: editDeal.couponCode || '',
+          discount: editDeal.discount || '',
+          expiredDate: editDeal.expiredDate ? new Date(editDeal.expiredDate).toISOString().split('T')[0] : '',
+        } : {
+          dealTitle: '',
+          dealDescription: '',
+          dealImage: '',
+          homePageTitle: '',
+          dealType: '',
+          dealCategory: 'coupon',
+          showOnHomepage: false,
+          details: '',
+          categorySelect: '',
+          store: '',
+          couponCode: '',
+          discount: '',
+          expiredDate: '',
+        },
+      ],
+    },
+    validationSchema: DealSchema,
+    onSubmit: async (values, { resetForm }) => {
+      if (editDeal) {
+        await handleUpdate(values, resetForm);
+      } else {
+        try {
+          for (let deal of values.deals) {
+            await dispatch(addDeal(deal)).unwrap();
+          }
+          toast.success(`${values.deals.length} deal(s) added!`);
+          dispatch(getDeals());
+          resetForm();
+        } catch (error) {
+          toast.error(`Failed to upload deals: ${error.message || 'Unknown error'}`);
+        }
+      }
+    },
+  });
+
   const handleEdit = (deal) => {
     setEditDeal(deal);
+    formik.setValues({
+      deals: [{
+        dealTitle: deal.dealTitle || '',
+        dealDescription: deal.dealDescription || '',
+        dealImage: deal.dealImage || '',
+        homePageTitle: deal.homePageTitle || '',
+        dealType: deal.dealType || '',
+        dealCategory: deal.dealCategory || 'coupon',
+        showOnHomepage: deal.showOnHomepage ?? false,
+        details: deal.details || '',
+        categorySelect: deal.categorySelect || '',
+        store: deal.store || '',
+        couponCode: deal.couponCode || '',
+        discount: deal.discount || '',
+        expiredDate: deal.expiredDate ? new Date(deal.expiredDate).toISOString().split('T')[0] : '',
+      }],
+    });
   };
 
   const handleUpdate = async (values, resetForm) => {
@@ -62,8 +209,8 @@ const Deals = () => {
       dispatch(getDeals());
       resetForm();
       setEditDeal(null);
-    } catch {
-      toast.error('Failed to update deal');
+    } catch (error) {
+      toast.error(`Failed to update deal: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -72,79 +219,73 @@ const Deals = () => {
       <ToastContainer />
       <h1 className="text-2xl font-bold mb-6">Deals/Coupons Upload</h1>
 
-      {deals?.length > 0 && (
-        <div className="mb-10 overflow-x-auto">
-          <table className="w-full table-auto border border-gray-300 text-sm">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="p-3 border">Title</th>
-                <th className="p-3 border">Description</th>
-                <th className="p-3 border">Image</th>
-                <th className="p-3 border">Homepage Title</th>
-                <th className="p-3 border">Type</th>
-                <th className="p-3 border">Category</th>
-                <th className="p-3 border">Homepage?</th>
-                <th className="p-3 border">Actions</th>
-                <th className="p-3 border">Store</th>
+      {/* Search Input for AG Grid */}
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search deals..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          onKeyUp={onFilterTextBoxChanged}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
 
-              </tr>
-            </thead>
-            <tbody>
-              {deals.map((deal) => (
-                <tr key={deal._id}>
-                  <td className="p-3 border">{deal.dealTitle}</td>
-                  <td className="p-3 border">{deal.dealDescription}</td>
-                  <td className="p-3 border">
-                    <img src={deal.dealImage} alt="deal" className="h-16 w-16 object-fill" />
-                  </td>
-                  <td className="p-3 border">{deal.homePageTitle}</td>
-                  <td className="p-3 border">{deal.dealType}</td>
-                  <td className="p-3 border">{deal.dealCategory}</td>
-                  <td className="p-3 border text-center">{deal.showOnHomepage ? '✅' : '❌'}</td>
-                  <td className="p-3 border">{deal.store}</td>
-
-                  <td className="p-3 border space-x-2">
-                    <button
-                      onClick={() => handleDelete(deal._id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs"
-                    >
-                      Delete
-                    </button>
-                    <button
-                      onClick={() => handleEdit(deal)}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-xs"
-                    >
-                      Edit
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* AG Grid Table */}
+      {loading ? (
+        <div className="text-center py-8">Loading Deals...</div>
+      ) : deals?.length > 0 ? (
+        <div className="ag-theme-alpine" style={{ height: 500, width: '100%' }}>
+          <AgGridReact
+            ref={gridRef}
+            rowData={deals}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            onGridReady={onGridReady}
+            quickFilterText={searchText}
+            pagination={true}
+            paginationPageSize={10}
+            domLayout='autoHeight' 
+          />
         </div>
+      ) : (
+        <div className="text-center py-8 text-gray-500">No deals available.</div>
       )}
 
       <Formik
         enableReinitialize
         initialValues={{
-            deals: [
-                editDeal || {
-                  dealTitle: '',
-                  dealDescription: '',
-                  dealImage: '',
-                  homePageTitle: '',
-                  dealType: '',
-                  dealCategory: 'coupon',
-                  showOnHomepage: false,
-                  details: '',
-                  categorySelect: '',
-                  store: '',
-                  couponCode: '',
-                  discount: '',
-                  expiredDate: '', // <-- NEW
-                },
-              ],
-              
+          deals: [
+            editDeal ? {
+              dealTitle: editDeal.dealTitle || '',
+              dealDescription: editDeal.dealDescription || '',
+              dealImage: editDeal.dealImage || '',
+              homePageTitle: editDeal.homePageTitle || '',
+              dealType: editDeal.dealType || '',
+              dealCategory: editDeal.dealCategory || 'coupon',
+              showOnHomepage: editDeal.showOnHomepage ?? false,
+              details: editDeal.details || '',
+              categorySelect: editDeal.categorySelect || '',
+              store: editDeal.store || '',
+              couponCode: editDeal.couponCode || '',
+              discount: editDeal.discount || '',
+              expiredDate: editDeal.expiredDate ? new Date(editDeal.expiredDate).toISOString().split('T')[0] : '',
+            } : {
+              dealTitle: '',
+              dealDescription: '',
+              dealImage: '',
+              homePageTitle: '',
+              dealType: '',
+              dealCategory: 'coupon',
+              showOnHomepage: false,
+              details: '',
+              categorySelect: '',
+              store: '',
+              couponCode: '',
+              discount: '',
+              expiredDate: '',
+            },
+          ],
         }}
         validationSchema={DealSchema}
         onSubmit={async (values, { resetForm }) => {
@@ -158,14 +299,14 @@ const Deals = () => {
               toast.success(`${values.deals.length} deal(s) added!`);
               dispatch(getDeals());
               resetForm();
-            } catch {
-              toast.error('Failed to upload deals');
+            } catch (error) {
+              toast.error(`Failed to upload deals: ${error.message || 'Unknown error'}`);
             }
           }
         }}
       >
         {({ values }) => (
-          <Form>
+          <Form className="mt-10">
             <FieldArray name="deals">
               {({ push, remove }) => (
                 <div className="space-y-10">
@@ -201,25 +342,25 @@ const Deals = () => {
                       </div>
 
                       <div className="mb-4">
-  <label className="block mb-1 font-medium">Deal Type</label>
-  <Field
-    as="select"
-    name={`deals[${index}].dealType`}
-    className="w-full px-3 py-2 border rounded-md"
-  >
-    <option value="">Select Deal Type</option>
-    <option value="Today's Top Deal">Today's Top Deal</option>
-    <option value="Hot">Hot</option>
-    <option value="Deal of week">Deal of week</option>
-    <option value="Coupons/Deals">Coupons/Deals</option>
-    <option value="Top Deals">Top Deals</option>
-  </Field>
-  <ErrorMessage
-    name={`deals[${index}].dealType`}
-    component="div"
-    className="text-red-500 text-sm mt-1"
-  />
-</div>
+                        <label className="block mb-1 font-medium">Deal Type</label>
+                        <Field
+                          as="select"
+                          name={`deals[${index}].dealType`}
+                          className="w-full px-3 py-2 border rounded-md"
+                        >
+                          <option value="">Select Deal Type</option>
+                          <option value="Today's Top Deal">Today's Top Deal</option>
+                          <option value="Hot">Hot</option>
+                          <option value="Deal of week">Deal of week</option>
+                          <option value="Coupons/Deals">Coupons/Deals</option>
+                          <option value="Top Deals">Top Deals</option>
+                        </Field>
+                        <ErrorMessage
+                          name={`deals[${index}].dealType`}
+                          component="div"
+                          className="text-red-500 text-sm mt-1"
+                        />
+                      </div>
 
 
                       <div className="mb-4">
@@ -238,63 +379,63 @@ const Deals = () => {
                       </div>
 
                       <div className="mb-4">
-  <label className="block mb-1 font-medium">Select Category</label>
-  <Field
-    as="select"
-    name={`deals[${index}].categorySelect`}
-    className="w-full px-3 py-2 border rounded-md"
-  >
-    <option value="">Select...</option>
-    {categories.map((category) => (
-      <option key={category._id} value={category.name}>
-        {category.name}
-      </option>
-    ))}
-  </Field>
-  <ErrorMessage
-    name={`deals[${index}].categorySelect`}
-    component="div"
-    className="text-red-500 text-sm mt-1"
-  />
-</div>
-<div className="mb-4">
-  <label className="block mb-1 font-medium">Select Store</label>
-  <Field
-    as="select"
-    name={`deals[${index}].store`}
-    className="w-full px-3 py-2 border rounded-md"
-  >
-    <option value="">Select a store</option>
-    {stores.map((store) => (
-      <option key={store._id} value={store.storeName}>
-        {store.storeName}
-      </option>
-    ))}
-  </Field>
-  <ErrorMessage
-    name={`deals[${index}].store`}
-    component="div"
-    className="text-red-500 text-sm mt-1"
-  />
-</div>
+                        <label className="block mb-1 font-medium">Select Category</label>
+                        <Field
+                          as="select"
+                          name={`deals[${index}].categorySelect`}
+                          className="w-full px-3 py-2 border rounded-md"
+                        >
+                          <option value="">Select...</option>
+                          {categories.map((category) => (
+                            <option key={category._id} value={category.name}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </Field>
+                        <ErrorMessage
+                          name={`deals[${index}].categorySelect`}
+                          component="div"
+                          className="text-red-500 text-sm mt-1"
+                        />
+                      </div>
+                      <div className="mb-4">
+                        <label className="block mb-1 font-medium">Select Store</label>
+                        <Field
+                          as="select"
+                          name={`deals[${index}].store`}
+                          className="w-full px-3 py-2 border rounded-md"
+                        >
+                          <option value="">Select a store</option>
+                          {stores.map((store) => (
+                            <option key={store._id} value={store.storeName}>
+                              {store.storeName}
+                            </option>
+                          ))}
+                        </Field>
+                        <ErrorMessage
+                          name={`deals[${index}].store`}
+                          component="div"
+                          className="text-red-500 text-sm mt-1"
+                        />
+                      </div>
 
-<div className="mb-4">
-  <label className="block mb-1 font-medium">Coupon Code</label>
-  <Field name={`deals[${index}].couponCode`} className="w-full px-3 py-2 border rounded-md" />
-  <ErrorMessage name={`deals[${index}].couponCode`} component="div" className="text-red-500 text-sm mt-1" />
-</div>
+                      <div className="mb-4">
+                        <label className="block mb-1 font-medium">Coupon Code</label>
+                        <Field name={`deals[${index}].couponCode`} className="w-full px-3 py-2 border rounded-md" />
+                        <ErrorMessage name={`deals[${index}].couponCode`} component="div" className="text-red-500 text-sm mt-1" />
+                      </div>
 
-<div className="mb-4">
-  <label className="block mb-1 font-medium">Discount</label>
-  <Field name={`deals[${index}].discount`} className="w-full px-3 py-2 border rounded-md" />
-  <ErrorMessage name={`deals[${index}].discount`} component="div" className="text-red-500 text-sm mt-1" />
-</div>
+                      <div className="mb-4">
+                        <label className="block mb-1 font-medium">Discount</label>
+                        <Field name={`deals[${index}].discount`} className="w-full px-3 py-2 border rounded-md" />
+                        <ErrorMessage name={`deals[${index}].discount`} component="div" className="text-red-500 text-sm mt-1" />
+                      </div>
 
-<div className="mb-4">
-  <label className="block mb-1 font-medium">Expiration Date</label>
-  <Field type="date" name={`deals[${index}].expiredDate`} className="w-full px-3 py-2 border rounded-md" />
-  <ErrorMessage name={`deals[${index}].expiredDate`} component="div" className="text-red-500 text-sm mt-1" />
-</div>
+                      <div className="mb-4">
+                        <label className="block mb-1 font-medium">Expiration Date</label>
+                        <Field type="date" name={`deals[${index}].expiredDate`} className="w-full px-3 py-2 border rounded-md" />
+                        <ErrorMessage name={`deals[${index}].expiredDate`} component="div" className="text-red-500 text-sm mt-1" />
+                      </div>
 
 
                       <div className="mb-4 flex items-center gap-2">

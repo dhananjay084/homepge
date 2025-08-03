@@ -1,153 +1,204 @@
-import React, { useEffect } from 'react';
+// src/pages/Login.jsx
+import React, { useEffect, useRef, useState } from 'react';
 import { Formik, Form, Field } from 'formik';
-import { useDispatch, useSelector } from 'react-redux'; // Import Redux hooks
-import { loginUser, googleLogin } from '../redux/auth/authApi'; // Import async thunks
-import { clearAuthMessage, setAuthMessage } from '../redux/auth/authSlice'; // Import slice actions
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  loginUser,
+  googleLogin,
+  checkCurrentUser,
+  setUserDataInCookies,
+} from '../redux/auth/authApi';
+import { clearAuthMessage, setAuthMessage } from '../redux/auth/authSlice';
 import AuthLayout from '../components/AuthLayout';
 import GoogleIcon from '@mui/icons-material/Google';
+import FacebookIcon from '@mui/icons-material/Facebook'; // optional visual
+import AppleIcon from '@mui/icons-material/Apple'; // optional visual
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Login = () => {
   const dispatch = useDispatch();
-  // Select relevant state from Redux store
+  const navigate = useNavigate();
+  const location = useLocation();
   const { loading, error, message, isAuthenticated } = useSelector((state) => state.auth);
+  const oauthHandledRef = useRef(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Effect to handle initial setup and Google OAuth redirect messages
   useEffect(() => {
-    // Clear any previous Redux messages on component mount
     dispatch(clearAuthMessage());
+    dispatch(checkCurrentUser());
+  }, [dispatch]);
 
-    // If user is already authenticated (e.g., from a previous session check), redirect to dashboard
-    if (isAuthenticated) {
-      window.location.href = '/dashboard';
-    }
+  useEffect(() => {
+    if (oauthHandledRef.current) return;
 
-    // Handle messages from Google OAuth redirect (e.g., /auth-success?name=...)
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     const name = params.get('name');
-    const authError = params.get('error'); // Using a different name to avoid conflict with Redux error state
+    const email = params.get('email');
+    const authError = params.get('error');
 
-    if (name) {
-      // Dispatch a success message to Redux
-      dispatch(setAuthMessage({ message: `Welcome, ${name}! You are logged in.`, type: 'success' }));
-      // Clean the URL
+    if (name && email) {
+      setUserDataInCookies({
+        name: decodeURIComponent(name),
+        email: decodeURIComponent(email),
+      });
+      dispatch(
+        setAuthMessage({
+          message: `Welcome, ${decodeURIComponent(name)}! Logging you in...`,
+          type: 'success',
+        })
+      );
       window.history.replaceState({}, document.title, window.location.pathname);
-      // Redirect to dashboard after a short delay
-      setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 1500);
+      dispatch(checkCurrentUser());
+      oauthHandledRef.current = true;
     } else if (authError === 'google_auth_failed') {
-      // Dispatch an error message to Redux
-      dispatch(setAuthMessage({ message: 'Google authentication failed. Please try again.', type: 'error' }));
-      // Clean the URL
+      dispatch(
+        setAuthMessage({
+          message: 'Google authentication failed. Please try again.',
+          type: 'error',
+        })
+      );
       window.history.replaceState({}, document.title, window.location.pathname);
+      oauthHandledRef.current = true;
     }
-  }, [dispatch, isAuthenticated]); // Depend on dispatch and isAuthenticated
+  }, [location.search, dispatch]);
 
-  // Handler for email/password login form submission
+  useEffect(() => {
+    if (isAuthenticated && !loading) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, loading, navigate]);
+
   const handleEmailLogin = async (values, { setSubmitting }) => {
-    // Dispatch the loginUser async thunk with form values
     await dispatch(loginUser(values));
-    setSubmitting(false); // Reset form submission state
+    setSubmitting(false);
   };
 
-  // Handler for Google login button click
   const handleGoogleLogin = () => {
-    // Dispatch the googleLogin async thunk.
-    // This thunk will handle the redirect to the backend's Google OAuth initiation endpoint.
     dispatch(googleLogin());
   };
 
   return (
-    <AuthLayout>
-      {/* If you want to keep the Banner, ensure it's imported and its props are handled */}
-      {/* <Banner Text="Every day we  the most interesting things" ColorText="discuss" BgImage={Image} /> */}
-
-      <h2 className='text-2xl text-center font-bold text-[#592EA9] mb-6'>Login to Your Account</h2>
-
-      {/* Display messages from Redux state */}
-      {message && (
-        <div className={`p-3 mb-4 rounded text-sm ${error ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-          {message}
+    // <AuthLayout>
+      <div className="min-h-[calc(100vh-0px)] flex flex-col lg:flex-row bg-white">
+        {/* Left image section on desktop, hidden on small */}
+        <div className="hidden lg:flex flex-1 bg-cover bg-center rounded-l-lg overflow-hidden">
+          <div
+            className="w-full"
+            style={{
+              backgroundImage:
+                "url('https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&fit=crop&w=900&q=80')",
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
         </div>
-      )}
-      {/* Display errors from Redux state */}
-      {error && (
-        <div className={`p-3 mb-4 rounded text-sm bg-red-100 text-red-700`}>
-          {error}
-        </div>
-      )}
 
-      <Formik
-        initialValues={{ email: '', password: '' }}
-        onSubmit={handleEmailLogin}
-      >
-        {({ isSubmitting }) => (
-          <Form className="mt-4 space-y-4">
-            <div>
-              <label htmlFor="email" className="text-sm font-medium text-gray-700">Email address</label>
-              <Field
-                name="email"
-                type="email"
-                placeholder="Input email address"
-                className="w-full border border-gray-300 p-2 mt-1 rounded-md focus:ring-2 focus:ring-[#592EA9] focus:border-transparent"
-              />
+        {/* Form container */}
+        <div className="flex-1 px-6 py-10 lg:px-16 lg:py-16 flex flex-col justify-center">
+          <div className="max-w-md mx-auto w-full">
+            <h2 className="text-2xl font-bold text-center text-[#592EA9] mb-4">Welcome Back 👋</h2>
+
+            {/* Messages */}
+            {/* {message && (
+              <div
+                className={`mb-4 rounded px-4 py-3 text-sm ${
+                  error ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+                }`}
+              >
+                {message}
+              </div>
+            )}
+            {error && (
+              <div className="mb-4 rounded px-4 py-3 text-sm bg-red-100 text-red-700">{error}</div>
+            )} */}
+
+            <Formik initialValues={{ email: '', password: '' }} onSubmit={handleEmailLogin}>
+              {({ isSubmitting }) => (
+                <Form className="space-y-4">
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <Field
+                      name="email"
+                      type="email"
+                      placeholder="Example@email.com"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#592EA9] focus:border-transparent"
+                    />
+                  </div>
+
+                  <div className="flex flex-col relative">
+                    <label className="text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <div className="relative">
+                      <Field
+                        name="password"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="At least 8 characters"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-[#592EA9] focus:border-transparent"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <div /> {/* placeholder to align forgot link right */}
+                    <div>
+                      <a
+                        href="/forgot-password"
+                        className="text-sm text-[#592EA9] hover:underline"
+                      >
+                        Forgot Password?
+                      </a>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-[#592EA9] text-white py-3 rounded-md font-medium hover:bg-opacity-90 transition"
+                    disabled={isSubmitting || loading}
+                  >
+                    {loading ? 'Logging in...' : 'Login'}
+                  </button>
+                </Form>
+              )}
+            </Formik>
+
+            <div className="relative my-6 flex items-center">
+              <div className="flex-grow border-t border-gray-300" />
+              <div className="px-3 text-sm text-gray-500">Or login with</div>
+              <div className="flex-grow border-t border-gray-300" />
             </div>
 
-            <div>
-              <label htmlFor="password" className="text-sm font-medium text-gray-700">Password</label>
-              <Field
-                name="password"
-                type="password"
-                placeholder="Input your password"
-                className="w-full border border-gray-300 p-2 mt-1 rounded-md focus:ring-2 focus:ring-[#592EA9] focus:border-transparent"
-              />
+            <div className="space-y-3">
+              <button
+                onClick={handleGoogleLogin}
+                className="w-full flex items-center justify-center gap-2 border border-gray-300 shadow-sm rounded-md py-3 hover:bg-gray-50 transition"
+                disabled={loading}
+              >
+                <GoogleIcon className="text-[#4285F4]" />
+                <span className="font-medium">Continue with Google</span>
+              </button>
+
+            
             </div>
 
-            <button
-              type="submit"
-              className="w-full bg-[#592EA9] text-white p-3 rounded-md mt-4 hover:bg-opacity-90 transition-colors duration-200"
-              disabled={isSubmitting || loading}
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </button>
-            <div className="text-center mt-2 text-sm text-[#592EA9] my-4">
-              <a href="/forgot-password" className="hover:underline">Forgot Password?</a>
+            <div className="text-center text-sm mt-6">
+              You don’t have an account?{' '}
+              <a className="text-[#592EA9] hover:underline" href="/signup">
+                Sign up
+              </a>
             </div>
-          </Form>
-        )}
-      </Formik>
-
-      <div className="relative flex items-center justify-center my-6">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-gray-300"></span>
-        </div>
-        <div className="relative bg-white px-4 text-sm text-gray-500">
-          Or login with
+          </div>
         </div>
       </div>
-
-      <div className="space-y-3">
-        <button
-          onClick={handleGoogleLogin}
-          className="w-full shadow-md p-3 rounded-md flex items-center justify-center gap-2 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-colors duration-200"
-          disabled={loading} 
-        >
-          <GoogleIcon className="text-[#4285F4]" /> Continue with Google
-        </button>
-        {/* You can add Facebook and Apple login buttons here if needed,
-            but they would require similar OAuth setup for their respective platforms. */}
-        {/* <button className="w-full shadow-md p-2 rounded flex items-center justify-center gap-2 text-white bg-[#1877F2]">
-          <FacebookIcon/> Continue with Facebook
-        </button>
-        <button className="w-full shadow-md p-2 rounded flex items-center justify-center gap-2 text-white bg-black">
-          <AppleIcon/> Continue with Apple
-        </button> */}
-      </div>
-
-      <div className="text-center text-sm mt-6">
-        You don’t have an account? <a className="text-[#592EA9] hover:underline" href="/signup">Sign up</a>
-      </div>
-    </AuthLayout>
+    // </AuthLayout>
   );
 };
 

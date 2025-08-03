@@ -10,28 +10,22 @@ const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 // Helper to set user data in client-side cookies for quick UI access
 // Note: This is for display purposes. The actual authentication status
 // relies on the HTTP-only cookies and backend verification.
-const setUserDataInCookies = (user) => {
-  if (user) {
-    // Set cookies with an expiration (e.g., 3 hours)
-    // This duration can be adjusted based on how long you want UI info to persist
-    const expires = 3 / 24; // Expires in 3 hours (converted to days for js-cookie)
-
-    Cookies.set('userName', user.name || user.email || 'User', { expires });
-    Cookies.set('userRole', user.role || 'user', { expires });
-    Cookies.set('userId', user._id, { expires });
-    // If you store email for UI, set it here too
-    if (user.email) {
-      Cookies.set('userEmail', user.email, { expires });
+export const setUserDataInCookies = (user) => {
+    if (user && typeof user === 'object') {
+      const expires = 15 / (24 * 60); // 15 minutes in days
+  
+      if (user.name) Cookies.set('userName', user.name, { expires });
+      if (user.role) Cookies.set('userRole', user.role, { expires });
+      if (user._id) Cookies.set('userId', user._id, { expires });
+      if (user.email) Cookies.set('userEmail', user.email, { expires });
+    } else {
+      // clear all display cookies
+      Cookies.remove('userName');
+      Cookies.remove('userRole');
+      Cookies.remove('userId');
+      Cookies.remove('userEmail');
     }
-
-  } else {
-    // Remove cookies when user logs out or session expires
-    Cookies.remove('userName');
-    Cookies.remove('userRole');
-    Cookies.remove('userId');
-    Cookies.remove('userEmail'); // Remove if you set it
-  }
-};
+  };
 
 // Async Thunk for User Registration
 export const registerUser = createAsyncThunk(
@@ -86,14 +80,12 @@ export const refreshAccessToken = createAsyncThunk(
     try {
       const response = await axios.post(`${SERVER_URL}/api/auth/refresh-token`);
       // Backend sets new HTTP-only cookies.
-      // We don't get user data back directly from refresh, so we don't update client-side cookies here
-      // unless you modify your backend's refresh endpoint to return user details.
-      // For now, client-side cookies will persist based on their own expiry.
+      // If your backend's refresh endpoint returns user data, you can update client-side cookies here.
+      // For now, client-side cookies will persist based on their own expiry or be updated by checkCurrentUser.
       return response.data; // Returns a success message
     } catch (error) {
       // If refresh token fails, it means user needs to re-login
       setUserDataInCookies(null); // Clear client-side cookies
-      // HTTP-only cookies are cleared by backend on logout or automatically expire.
       return rejectWithValue(error.response?.data?.message || 'Session expired. Please log in again.');
     }
   }
@@ -105,7 +97,7 @@ export const logoutUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.post(`${SERVER_URL}/api/auth/logout`);
-      setUserDataInCookies(null); // Clear client-side cookies
+      setUserDataInCookies(null); // Clear client-side cookies immediately on logout request
       // Backend clears HTTP-only cookies.
       return response.data; // Returns a success message
     } catch (error) {
@@ -120,42 +112,54 @@ export const checkCurrentUser = createAsyncThunk(
   async (_, { rejectWithValue, dispatch }) => {
     try {
       const response = await axios.get(`${SERVER_URL}/api/auth/current_user`);
-      // Backend's current_user route returns { user: { _id, role } }
-      // We need to fetch full name/email from client-side cookies for UI
-      const storedName = Cookies.get('userName');
-      const storedEmail = Cookies.get('userEmail');
-      const user = {
-        ...response.data.user,
-        name: storedName || 'User', // Use stored name or default
-        email: storedEmail // Use stored email
-      };
-      setUserDataInCookies(user); // Re-set cookies to refresh their expiry
-      return user; // Return the user object with basic details
+      // Backend's current_user route returns { user: { _id, role } } or { user: null }
+      if (response.data.user && response.data.user._id) {
+        // If backend confirms an active user, get display data from client-side cookies
+        // or fetch from backend if needed (for full user profile)
+        const storedName = Cookies.get('userName');
+        const storedEmail = Cookies.get('userEmail');
+        const user = {
+          ...response.data.user,
+          name: storedName || 'User', // Use stored name or default
+          email: storedEmail // Use stored email
+        };
+        setUserDataInCookies(user); // Re-set cookies to refresh their expiry and ensure consistency
+        return user; // Return the user object with basic details
+      } else {
+        // If backend explicitly says no user, clear client-side cookies
+        setUserDataInCookies(null);
+        return rejectWithValue('Not authenticated.');
+      }
     } catch (error) {
       // If access token expired, try to refresh it
-      if (error.response?.status === 401 && error.response?.data?.message === 'Access token expired. Please refresh.') {
+      if (error.response?.status === 401 && error.response?.data?.message === 'Invalid or expired access token.') {
         try {
           await dispatch(refreshAccessToken()).unwrap(); // Dispatch refresh thunk
           // After successful refresh, try getting current user again
           const refreshedResponse = await axios.get(`${SERVER_URL}/api/auth/current_user`);
-          const storedName = Cookies.get('userName');
-          const storedEmail = Cookies.get('userEmail');
-          const user = {
-            ...refreshedResponse.data.user,
-            name: storedName || 'User',
-            email: storedEmail
-          };
-          setUserDataInCookies(user); // Re-set cookies to refresh their expiry
-          return user;
+          if (refreshedResponse.data.user && refreshedResponse.data.user._id) {
+            const storedName = Cookies.get('userName');
+            const storedEmail = Cookies.get('userEmail');
+            const user = {
+              ...refreshedResponse.data.user,
+              name: storedName || 'User',
+              email: storedEmail
+            };
+            setUserDataInCookies(user); // Re-set cookies to refresh their expiry
+            return user;
+          } else {
+            setUserDataInCookies(null); // Refresh succeeded but no user data, clear client-side cookies
+            return rejectWithValue('Authentication failed after token refresh.');
+          }
         } catch (refreshError) {
           // If refresh also fails, clear session and force re-login
           setUserDataInCookies(null); // Clear client-side cookies
           return rejectWithValue(refreshError.response?.data?.message || 'Session expired. Please log in again.');
         }
       }
-      // For any other error (e.g., no token, invalid token), clear session
+      // For any other error (e.g., network error, backend error, no token), clear session
       setUserDataInCookies(null); // Clear client-side cookies
-      return rejectWithValue(error.response?.data?.message || 'Not authenticated.');
+      return rejectWithValue(error.response?.data?.message || 'Failed to check authentication status.');
     }
   }
 );

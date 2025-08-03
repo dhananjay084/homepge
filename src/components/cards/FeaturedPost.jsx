@@ -25,7 +25,7 @@ const FeaturedPost = ({blog}) => {
     }
   return (
     <div className='p-4 border-2 border-[#f1f1f1] rounded-lg mx-4'>
-      <img src={Image} className='max-h-[300px] w-full mb-4'/>
+      <img src={blog.image} className='max-h-[300px] w-full mb-4'/>
       <span className='font-medium text-[15px]'><p >By</p><Typography color='primary'>Author</Typography></span>
       <p className='font-medium text-[15px]'>
         {new Date(blog.updatedAt).toLocaleDateString('en-US', {

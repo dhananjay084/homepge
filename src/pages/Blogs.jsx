@@ -18,7 +18,7 @@ const BlogsPage = () => {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <div className="flex gap-4 overflow-x-auto">
+        <div className="gap-4 overflow-x-auto">
           {blogs.map((blog) => (
             <BlogCard key={blog._id} blog={blog} />
           ))}
