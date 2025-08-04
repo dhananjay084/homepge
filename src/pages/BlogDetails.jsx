@@ -63,7 +63,7 @@ const BlogDetails = () => {
               {currentBlog.heading || "Untitled"}
             </h2>
             <Typography
-              sx={{ fontSize: "13px", whiteSpace: isHTML ? "normal" : "pre-line", mt: 1 }}
+              sx={{ fontSize: "13px"}}
               {...(isHTML
                 ? { dangerouslySetInnerHTML: { __html: blogDetails } }
                 : { children: blogDetails })}
