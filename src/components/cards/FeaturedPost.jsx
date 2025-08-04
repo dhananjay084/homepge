@@ -19,13 +19,13 @@ const FeaturedPost = ({blog}) => {
         return DOMPurify.sanitize(truncated);
       };
       const handleClick =()=>{
-        navigate(`/blogs`);
+        navigate(`/blog/${blog._id}`);
     
     
     }
   return (
     <div className='p-4 border-2 border-[#f1f1f1] rounded-lg mx-4'>
-      <img src={blog.image} className='max-h-[300px] w-full mb-4'/>
+      <img src={blog.image  } className='max-h-[300px] w-full mb-4'/>
       <span className='font-medium text-[15px]'><p >By</p><Typography color='primary'>Author</Typography></span>
       <p className='font-medium text-[15px]'>
         {new Date(blog.updatedAt).toLocaleDateString('en-US', {
@@ -40,7 +40,7 @@ const FeaturedPost = ({blog}) => {
   dangerouslySetInnerHTML={{ __html: getFirst200Words(blog.details) }}
 />
       <Button type="submit" variant="contained" color="black" sx={{color:'#fff', borderRadius:'7px',mt:2}} onClick={handleClick}> 
-        See All
+        View
       </Button>
     </div>
   )

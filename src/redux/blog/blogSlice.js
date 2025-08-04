@@ -45,13 +45,27 @@ export const deleteBlog = createAsyncThunk('blogs/deleteBlog', async (id, thunkA
     return thunkAPI.rejectWithValue(err.response?.data?.error || err.message);
   }
 });
-
+export const fetchBlogById = createAsyncThunk(
+    'blogs/fetchBlogById',
+    async (id, thunkAPI) => {
+      try {
+        const response = await api.getBlogById(id);
+        return response.data;
+      } catch (err) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data?.error || err.message
+        );
+      }
+    }
+  );
+  
 const blogSlice = createSlice({
   name: 'blogs',
   initialState: {
     blogs: [],
     loading: false,
     error: null,
+    currentBlog: null, 
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -105,7 +119,22 @@ const blogSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
         toast.error(`Failed to delete blog: ${action.payload}`); // Added toast for error
-      });
+      })
+      // Fetch single blog by ID
+.addCase(fetchBlogById.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
+  .addCase(fetchBlogById.fulfilled, (state, action) => {
+    state.currentBlog = action.payload;
+    state.loading = false;
+  })
+  .addCase(fetchBlogById.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+    toast.error(`Failed to fetch blog: ${action.payload}`);
+  })
+  
   },
 });
 

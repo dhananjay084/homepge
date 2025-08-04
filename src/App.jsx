@@ -17,6 +17,7 @@ import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import SingleCategory from "./pages/SingleCategory";
 import IndividualStore from "./pages/IndividualStore";
 import DealDetails from "./pages/DealDetails";
+import BlogDetails from "./pages/BlogDetails";
 
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -94,6 +95,7 @@ function App() {
             <Route path="/store/:id" element={<IndividualStore />} />
             <Route path="/deal/:id" element={<DealDetails />} />
             <Route path="/blogs" element={<Blogs />} />
+            <Route path="/blog/:id" element={<BlogDetails />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
