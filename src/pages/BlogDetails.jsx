@@ -27,7 +27,7 @@ const BlogDetails = () => {
 
   useEffect(() => {
     if (currentBlog) {
-      console.log("Fetched blog:", currentBlog);
+      console.log("Fetched blog:");
     }
   }, [currentBlog]);
 
