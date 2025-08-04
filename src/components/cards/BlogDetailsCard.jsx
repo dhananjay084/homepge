@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 
 
 const Coupons_Deals = ({ border ,data}) => {
-    console.log(data)
   if (!data) return null; 
     const navigate = useNavigate();
  
