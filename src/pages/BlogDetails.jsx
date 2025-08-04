@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Banner from "../components/Minor/Banner";
-import Image from "../assets/banner-image.webp";
+import DefaultBanner from "../assets/banner-image.webp"; // fallback image
 import { Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBlogById, fetchBlogs } from "../redux/blog/blogSlice"; // ensure fetchBlogById is exported
@@ -30,31 +30,16 @@ const BlogDetails = () => {
       console.log("Fetched blog:", currentBlog);
     }
   }, [currentBlog]);
-  console.log(currentBlog)
-  // Fallback placeholder content if blog has no body/content
-  const defaultContent = `
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-    eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-    minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-    aliquip ex ea commodo consequat. Duis aute irure dolor in
-    reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-    pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-    culpa qui officia deserunt mollit anim id est laborum.
-  `;
 
-  // Assume the blog text is in currentBlog.content or currentBlog.body — adjust to your schema
-  const blogContentRaw =
-    currentBlog?.details 
-
-  // For safe rendering: if the content is HTML, use dangerouslySetInnerHTML. Otherwise, show as plain text.
-  const isHTML = /<\/?[a-z][\s\S]*>/i.test(blogContentRaw); // naive check
+  const blogDetails = currentBlog?.details || "";
+  const isHTML = /<\/?[a-z][\s\S]*>/i.test(blogDetails); // naive HTML detection
 
   return (
     <div className="p-4">
       <Banner
         Text="Every day we discuss the most interesting things"
         ColorText="discuss"
-        BgImage={currentBlog.image}
+        BgImage={currentBlog?.image || DefaultBanner}
       />
 
       <div className="my-4">
@@ -65,7 +50,9 @@ const BlogDetails = () => {
         ) : currentBlog ? (
           <>
             <p className="text-sm text-purple-600 font-semibold">
-              {new Date(currentBlog.createdAt || currentBlog.updatedAt).toLocaleDateString(undefined, {
+              {new Date(
+                currentBlog.createdAt || currentBlog.updatedAt || Date.now()
+              ).toLocaleDateString(undefined, {
                 weekday: "long",
                 day: "numeric",
                 month: "short",
@@ -76,12 +63,10 @@ const BlogDetails = () => {
               {currentBlog.heading || "Untitled"}
             </h2>
             <Typography
-              sx={{ fontSize: "13px"}}
-              dangerouslySetInnerHTML={
-                isHTML
-                  ? { __html: currentBlog.details }
-                  : { __html: currentBlog.details  }
-              }
+              sx={{ fontSize: "13px", whiteSpace: isHTML ? "normal" : "pre-line", mt: 1 }}
+              {...(isHTML
+                ? { dangerouslySetInnerHTML: { __html: blogDetails } }
+                : { children: blogDetails })}
             />
           </>
         ) : (
